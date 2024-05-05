@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  nginx-test:
+    runs-on: ubuntu-latest 
+    name: Run test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run tests
+        run: echo "Running tests."
+
+  deploy:
+    needs: nginx-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate tag with Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com/mobi-dev-neo
+          flavor: latest=false
+          tags: type=sha,prefix=commit-,format=short
+
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com
+
+      - name: Build, tag, and push Docker image to Amazon ECR
+        run: |
+          docker build ./app/nginx -t ${{ steps.meta.outputs.tags }}
+          docker push ${{ steps.meta.outputs.tags }}
