@@ -44,3 +44,25 @@ jobs:
         run: |
           docker build ./app/nginx -t ${{ steps.meta.outputs.tags }}
           docker push ${{ steps.meta.outputs.tags }}
+
+      - name: Checkout external repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'takashitakeyama-mobilus/mobi-dev-neo-test-app'
+          token: ${{ secrets.EXTERNAL_REPO_ACCESS_TOKEN }}
+          # path: './helm/game-2052'
+  
+      - name: Update deployment image
+        # working-directory: ./
+        run: |
+          pwd
+          sed -i "s|image: nginx:[^ ]*|image: nginx:${{ steps.meta.outputs.tags }}|" hoge.yaml
+  
+      - name: Commit and push
+        # working-directory: helm
+        run: |
+          git config user.name 'Takashi Takeyama'
+          git config user.email 'hoge@github.com'
+          git add .
+          git commit -m "Update image to ${{ steps.meta.outputs.tags }}"
+          git push
