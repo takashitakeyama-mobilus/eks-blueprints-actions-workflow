@@ -7,7 +7,7 @@ on:
 
 jobs:
   nginx-test:
-    runs-on: ubuntu-latest 
+    runs-on: self-hosted 
     name: Run test
     steps:
       - name: Checkout code
@@ -17,7 +17,7 @@ jobs:
 
   deploy:
     needs: nginx-test
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
