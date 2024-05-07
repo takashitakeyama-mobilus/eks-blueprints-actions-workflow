@@ -55,7 +55,7 @@ jobs:
       - name: Update deployment image
         run: |
           pwd
-          sed -i "s|image: 058264449786.dkr.ecr.ap-northeast-1.amazonaws.com/mobi-dev-neo:[^ ]*|image: ${{ steps.meta.outputs.tags }}|" helm/game-2052/templates/deployment.yaml
+          sed -i "s|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com/mobi-dev-neo:[^ ]*|image: ${{ steps.meta.outputs.tags }}|" helm/game-2052/templates/deployment.yaml
   
       - name: Commit and push
         run: |
