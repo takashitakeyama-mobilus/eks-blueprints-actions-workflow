@@ -42,7 +42,7 @@ jobs:
 
       - name: Build and push Docker image to Amazon ECR
         run: |
-          docker build ./app/nginx -t ${{ steps.meta.outputs.tags }}
+          docker build --platform linux/amd64 ./app/nginx -t ${{ steps.meta.outputs.tags }}
           docker push ${{ steps.meta.outputs.tags }}
 
       - name: Checkout external repository
