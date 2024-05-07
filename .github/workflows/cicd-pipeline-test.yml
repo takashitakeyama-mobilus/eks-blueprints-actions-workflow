@@ -33,14 +33,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com/mobi-dev-neo
+          images: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com/${{ vars.ENVIRONMENT }}
           flavor: latest=false
           tags: type=sha,prefix=commit-,format=short
 
       - name: Login to Amazon ECR
         run: aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com
 
-      - name: Build, tag, and push Docker image to Amazon ECR
+      - name: Build and push Docker image to Amazon ECR
         run: |
           docker build ./app/nginx -t ${{ steps.meta.outputs.tags }}
           docker push ${{ steps.meta.outputs.tags }}
@@ -48,21 +48,17 @@ jobs:
       - name: Checkout external repository
         uses: actions/checkout@v4
         with:
-          repository: 'takashitakeyama-mobilus/mobi-dev-neo-test-app'
+          repository: ${{ vars.EXTERNALREPO }}
           token: ${{ secrets.EXTERNAL_REPO_ACCESS_TOKEN }}
-          # path: './helm/game-2052'
   
       - name: Update deployment image
-        # working-directory: ./
         run: |
           pwd
-          sed -i "s|image: nginx:[^ ]*|image: nginx:${{ steps.meta.outputs.tags }}|" hoge.yaml
+          sed -i "s|image: nginx:[^ ]*|image: nginx:${{ steps.meta.outputs.version }}|" hoge.yaml
   
       - name: Commit and push
-        # working-directory: helm
         run: |
-          git config user.name 'Takashi Takeyama'
-          git config user.email 'hoge@github.com'
+          git config user.name ${{ github.actor }}
           git add .
-          git commit -m "Update image to ${{ steps.meta.outputs.tags }}"
+          git commit -m "Update image to ${{ steps.meta.outputs.version }}"
           git push
