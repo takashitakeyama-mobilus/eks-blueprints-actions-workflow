@@ -54,7 +54,7 @@ jobs:
       - name: Update deployment image
         run: |
           pwd
-          sed -i "s|image: nginx:[^ ]*|image: nginx:${{ steps.meta.outputs.version }}|" hoge.yaml
+          sed -i "s|image: nginx:[^ ]*|image: nginx:${{ steps.meta.outputs.version }}|" helm/game-2052/templates/deployment.yaml
   
       - name: Commit and push
         run: |
